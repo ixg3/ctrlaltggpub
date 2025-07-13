@@ -3,52 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CtrlAltGG - Hand of G Lair</title>
+    <title>CtrlAltGG - Hand of G</title>
     <style>
         body {
-            font-family: monospace;
-            background-color: #000;
-            color: #0f0;
+            background: #000;
+            color: #ff69b4;
+            font-family: 'Courier New', monospace;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
             text-align: center;
         }
-        pre {
-            text-align: left;
-            display: inline-block;
-            margin: 20px auto;
+        #matrix {
+            white-space: pre;
+            font-size: 12px;
+            line-height: 1.2;
+            user-select: none;
         }
-        form {
-            margin: 20px;
+        .section {
+            display: none;
+            margin-top: 20px;
         }
-        input, button {
-            background: #000;
-            color: #0f0;
-            border: 1px solid #0f0;
-            padding: 5px;
+        .section.active {
+            display: block;
         }
-        .flower-container {
-            display: grid;
-            grid-template-columns: repeat(5, 50px);
-            gap: 10px;
-            margin: 20px auto;
-            max-width: 300px;
+        input[type="text"] {
+            background: #111;
+            color: #ff69b4;
+            border: 1px solid #ff69b4;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
         }
-        .circle {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #0f0;
-            border-radius: 50%;
+        button {
+            background: #ff69b4;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
         }
-        /* Add more styles if needed for the puzzle */
+        button:hover {
+            background: #ffb6c1;
+        }
+        canvas {
+            border: 1px solid #ff69b4;
+            margin-top: 20px;
+        }
+        .error {
+            color: #f00;
+        }
+        .success {
+            color: #ffb6c1;
+        }
+        .matrix-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
-
-    <section id="lair">
-        <h1>CtrlAltGG - Hand of G Lair</h1>
-        <p>You've been hacked by the Hand of G. Find the secret key in the matrix to proceed.</p>
-        <pre>
-0000000000000000000000000000000000000000
+    <canvas id="matrix-animation" class="matrix-animation"></canvas>
+    <div class="container">
+        <div id="lair" class="section active">
+            <h1>CtrlAltGG - Hand of G</h1>
+            <h2>Lair: Find the Secret Key</h2>
+            <p>You've been hacked by the Hand of G. Find the secret key in the matrix to proceed.</p>
+            <pre id="matrix">0000000000000000000000000000000000000000
 000000000000X00000000000000000000000000
 0000000000000000000000000000000000000000
 000000000000000000000X00000000000000000
@@ -67,58 +100,232 @@
 0000000000000000000000000000000000000000
 0000000000000000000000000000000000000000
 0000000000000000000000000000000000000000
-000000000000000000000X00000000000000000
-        </pre>
-        <p>Enter the secret key (row numbers of X's, concatenated):</p>
-        <form>
-            <input type="text" placeholder="Secret key">
-            <button type="submit">Submit</button>
-        </form>
-        <p>Access Granted! Proceed to Firewall</p>
-    </section>
-
-    <section id="firewall">
-        <h1>CtrlAltGG Firewall</h1>
-        <p>[WARNING: CLASSIFIED] The Hand of G weaves chaos in the shadows of the digital abyss. Prove you’re one of us, or fall to our tricks.</p>
-        <p>Command: Submit the elite code (Hint: Think leet)</p>
-        <form>
-            <input type="text" placeholder="Elite code">
-            <button type="submit">Execute</button>
-        </form>
-        <p>Access granted... Enter Headquarters</p>
-        <a href="#lair">Return to Lair</a>
-    </section>
-
-    <section id="headquarters">
-        <h1>CtrlAltGG - Hand of G Headquarters</h1>
-        <p>You’ve breached the Firewall. Complete the Flower of Life by placing the circles in their sacred positions.</p>
-        <p>Buy the ticket, take the ride.</p>
-        <div class="flower-container">
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <!-- Add more circles or adjust based on the "Flower of Life" pattern -->
+000000000000000000000X00000000000000000</pre>
+            <p>Enter the secret key (row numbers of X's, concatenated):</p>
+            <input type="text" id="secret-key" placeholder="Secret key">
+            <button onclick="checkKey()">Submit</button>
+            <p id="lair-message"></p>
         </div>
-        <form>
-            <button type="submit">Submit Pattern</button>
-        </form>
-        <p>[DECRYPTED] <a href="https://x.com/ixa313">https://x.com/ixa313</a></p>
-        <a href="#firewall">Back to Firewall</a>
-    </section>
-
-    <!-- Add JavaScript if needed for form submissions or interactivity -->
+        <div id="firewall" class="section">
+            <h2>Firewall: Enter the Elite Code</h2>
+            <p>Think leet to bypass the firewall.</p>
+            <input type="text" id="elite-code" placeholder="Enter code">
+            <button onclick="checkCode()">Submit</button>
+            <p id="firewall-message"></p>
+        </div>
+        <div id="headquarters" class="section">
+            <h2>Hand of G Uploading... to retain access to your device or cancel upload: Complete the Flower of Life</h2>
+            <p>Buy the ticket, take the ride. Drag and drop uploading files to form the Seed of Life. Upon completion, the full Flower of Life will reveal itself. CyberSalvation</p>
+            <canvas id="flower-canvas" width="400" height="400"></canvas>
+            <p id="headquarters-message"></p>
+        </div>
+        <div id="success" class="section">
+            <h2>Success! Trolledbythehandofg</h2>
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png" alt="Troll Face" style="width:200px; height:auto;">
+            <p><a href="https://x.com/ixa313">Visit my X account</a></p>
+        </div>
+    </div>
     <script>
-        // Example: Basic form handling (since no backend, just alert for demo)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', e => {
-                e.preventDefault();
-                alert('Submitted! (Demo - no backend)');
+        // Lair Puzzle
+        function checkKey() {
+            const key = document.getElementById('secret-key').value.trim();
+            const message = document.getElementById('lair-message');
+            if (key === '24720') {
+                message.textContent = 'Access Granted! Proceed to Firewall';
+                message.className = 'success';
+                setTimeout(() => {
+                    document.getElementById('lair').classList.remove('active');
+                    document.getElementById('firewall').classList.add('active');
+                }, 1000);
+            } else {
+                message.textContent = 'Invalid key. Try again.';
+                message.className = 'error';
+            }
+        }
+
+        // Firewall Puzzle
+        function checkCode() {
+            const code = document.getElementById('elite-code').value.trim();
+            const message = document.getElementById('firewall-message');
+            if (code === '1337') {
+                message.textContent = 'Firewall bypassed!';
+                message.className = 'success';
+                setTimeout(() => {
+                    document.getElementById('firewall').classList.remove('active');
+                    document.getElementById('headquarters').classList.add('active');
+                    initFlowerCanvas();
+                }, 1000);
+            } else {
+                message.textContent = 'Invalid code. Try again.';
+                message.className = 'error';
+            }
+        }
+
+        // Flower of Life Puzzle - New Version
+        const centerX = 200;
+        const centerY = 200;
+        const radius = 40;
+        const dist = 40;
+        let targets = [];
+        for (let i = 0; i < 6; i++) {
+            const angle = i * 60 * Math.PI / 180;
+            targets.push({
+                x: centerX + dist * Math.cos(angle),
+                y: centerY + dist * Math.sin(angle)
             });
+        }
+        let circles = [];
+        for (let i = 0; i < 6; i++) {
+            circles.push({
+                x: 50,
+                y: 50 + i * 50,
+                radius: radius,
+                placed: false
+            });
+        }
+        let selectedCircle = null;
+
+        function initFlowerCanvas() {
+            const canvas = document.getElementById('flower-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.addEventListener('mousedown', (e) => startDrag(e, canvas, ctx));
+            canvas.addEventListener('mousemove', (e) => drag(e, canvas, ctx));
+            canvas.addEventListener('mouseup', (e) => endDrag(e, canvas, ctx));
+            drawFlower(ctx);
+        }
+
+        function startDrag(e, canvas, ctx) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            circles.forEach(circle => {
+                if (!circle.placed) {  // Only drag unplaced circles
+                    const dx = mouseX - circle.x;
+                    const dy = mouseY - circle.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < circle.radius) {
+                        selectedCircle = circle;
+                    }
+                }
+            });
+        }
+
+        function drag(e, canvas, ctx) {
+            if (selectedCircle) {
+                const rect = canvas.getBoundingClientRect();
+                selectedCircle.x = e.clientX - rect.left;
+                selectedCircle.y = e.clientY - rect.top;
+                drawFlower(ctx);
+            }
+        }
+
+        function endDrag(e, canvas, ctx) {
+            if (selectedCircle) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                let placed = false;
+                targets.forEach(target => {
+                    const dx = mouseX - target.x;
+                    const dy = mouseY - target.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 30) {
+                        // Check if occupied
+                        const occupied = circles.some(c => c !== selectedCircle && c.placed && c.x === target.x && c.y === target.y);
+                        if (!occupied) {
+                            selectedCircle.x = target.x;
+                            selectedCircle.y = target.y;
+                            selectedCircle.placed = true;
+                            placed = true;
+                        }
+                    }
+                });
+                selectedCircle = null;
+                drawFlower(ctx);
+                if (circles.every(circle => circle.placed)) {
+                    document.getElementById('headquarters').classList.remove('active');
+                    document.getElementById('success').classList.add('active');
+                    drawFlower(ctx);  // Redraw to show full flower (optional, since section hides)
+                }
+            }
+        }
+
+        function drawFlower(ctx) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.strokeStyle = '#ff69b4';
+            ctx.lineWidth = 2;
+
+            // Draw central circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = '#ff69b4';  // Filled as complete
+            ctx.fill();
+
+            // Draw draggable circles
+            circles.forEach(circle => {
+                ctx.beginPath();
+                ctx.arc(circle.x, circle.y, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = circle.placed ? '#ff69b4' : '#333';
+                ctx.fill();
+            });
+
+            // If complete, draw the second ring (12 circles)
+            if (circles.every(circle => circle.placed)) {
+                // Radial outer (at 2 * dist, same angles)
+                for (let i = 0; i < 6; i++) {
+                    const angle = i * 60 * Math.PI / 180;
+                    const ox = centerX + 2 * dist * Math.cos(angle);
+                    const oy = centerY + 2 * dist * Math.sin(angle);
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = '#ff69b4';
+                    ctx.fill();
+                }
+                // Mid outer (at dist * sqrt(3), mid angles)
+                const dist2 = dist * Math.sqrt(3);
+                for (let i = 0; i < 6; i++) {
+                    const angle = (30 + i * 60) * Math.PI / 180;
+                    const ox = centerX + dist2 * Math.cos(angle);
+                    const oy = centerY + dist2 * Math.sin(angle);
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = '#ff69b4';
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Matrix Animation Background
+        const animCanvas = document.getElementById('matrix-animation');
+        animCanvas.width = window.innerWidth;
+        animCanvas.height = window.innerHeight;
+        const ctx = animCanvas.getContext('2d');
+        const chars = '01X';
+        const fontSize = 14;
+        const columns = animCanvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(0);
+
+        function drawMatrixAnimation() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, animCanvas.width, animCanvas.height);
+            ctx.fillStyle = '#ff69b4';
+            ctx.font = fontSize + 'px Courier New';
+            drops.forEach((y, i) => {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                const x = i * fontSize;
+                ctx.fillText(text, x, y);
+                if (y > animCanvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i] += fontSize;
+            });
+        }
+
+        setInterval(drawMatrixAnimation, 50);
+        window.addEventListener('resize', () => {
+            animCanvas.width = window.innerWidth;
+            animCanvas.height = window.innerHeight;
         });
     </script>
-
 </body>
 </html>
