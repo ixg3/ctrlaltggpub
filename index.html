@@ -1,96 +1,53 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CtrlAltGG - Hand of G</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>CtrlAltGG - Hand of G Lair</title>
     <style>
         body {
-            background: #0a0a0a;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
+            background-color: #000;
+            color: #0f0;
+            padding: 20px;
+            text-align: center;
         }
-        .matrix {
-            font-size: 0.8rem;
-            line-height: 1.2;
-            white-space: pre;
-        }
-        .blink {
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .hidden { display: none; }
-        .puzzle-canvas {
-            width: 300px;
-            height: 300px;
-            background: #1a1a1a;
-            border: 2px solid #00ff00;
-        }
-        .circle-piece {
-            width: 60px;
-            height: 60px;
-            cursor: move;
+        pre {
+            text-align: left;
             display: inline-block;
-            margin: 5px;
+            margin: 20px auto;
         }
-        .circle-piece svg {
-            width: 100%;
-            height: 100%;
+        form {
+            margin: 20px;
         }
-        .correct {
-            filter: drop-shadow(0 0 5px #00ff00);
+        input, button {
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px;
         }
+        .flower-container {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .circle {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #0f0;
+            border-radius: 50%;
+        }
+        /* Add more styles if needed for the puzzle */
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
-    <div id="game-container" class="max-w-2xl w-full">
-        <!-- Lair Section (Firewall content) -->
-        <section id="lair" class="bg-gray-900 p-6 rounded-lg shadow-lg">
-            <h1 class="text-2xl font-bold mb-4">CtrlAltGG - Hand of G Lair</h1>
-            <p class="mb-4">You've been hacked by the Hand of G. Find the secret key in the matrix to proceed.</p>
-            <pre class="matrix mb-4">
+<body>
+
+    <section id="lair">
+        <h1>CtrlAltGG - Hand of G Lair</h1>
+        <p>You've been hacked by the Hand of G. Find the secret key in the matrix to proceed.</p>
+        <pre>
 0000000000000000000000000000000000000000
 000000000000X00000000000000000000000000
 0000000000000000000000000000000000000000
@@ -111,232 +68,57 @@
 0000000000000000000000000000000000000000
 0000000000000000000000000000000000000000
 000000000000000000000X00000000000000000
-            </pre>
-            <p class="mb-2">Enter the secret key (row numbers of X's, concatenated):</p>
-            <input id="lair-input" type="text" class="w-full p-2 mb-2 bg-black border border-green-500 text-green-500" placeholder="Enter key...">
-            <button onclick="checkLairKey()" class="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600">Submit</button>
-            <p id="lair-feedback" class="mt-2"></p>
-            <a id="lair-next" href="#" onclick="showSection('firewall')" class="hidden mt-4 text-green-500 underline">Access Granted! Proceed to Firewall</a>
-        </section>
+        </pre>
+        <p>Enter the secret key (row numbers of X's, concatenated):</p>
+        <form>
+            <input type="text" placeholder="Secret key">
+            <button type="submit">Submit</button>
+        </form>
+        <p>Access Granted! Proceed to Firewall</p>
+    </section>
 
-        <!-- Firewall Section (Lair content) -->
-        <section id="firewall" class="hidden bg-gray-900 p-6 rounded-lg shadow-lg">
-            <h1 class="text-2xl font-bold mb-4">CtrlAltGG Firewall</h1>
-            <p class="mb-4">[WARNING: CLASSIFIED] The Hand of G weaves chaos in the shadows of the digital abyss. Prove you’re one of us, or fall to our tricks.</p>
-            <p class="mb-2">Command: Submit the elite code (Hint: Think leet)</p>
-            <input id="firewall-input" type="text" class="w-full p-2 mb-2 bg-black border border-green-500 text-green-500" placeholder="Enter code...">
-            <button onclick="checkFirewallCode()" class="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600">Execute</button>
-            <p id="firewall-feedback" class="mt-2"></p>
-            <a id="firewall-next" href="#" onclick="showSection('headquarters')" class="hidden mt-4 text-green-500 underline">Access granted... Enter Headquarters</a>
-            <a href="#" onclick="showSection('lair')" class="mt-4 text-green-500 underline">Return to Lair</a>
-        </section>
+    <section id="firewall">
+        <h1>CtrlAltGG Firewall</h1>
+        <p>[WARNING: CLASSIFIED] The Hand of G weaves chaos in the shadows of the digital abyss. Prove you’re one of us, or fall to our tricks.</p>
+        <p>Command: Submit the elite code (Hint: Think leet)</p>
+        <form>
+            <input type="text" placeholder="Elite code">
+            <button type="submit">Execute</button>
+        </form>
+        <p>Access granted... Enter Headquarters</p>
+        <a href="#lair">Return to Lair</a>
+    </section>
 
-        <!-- Headquarters Section (Flower of Life Circle Placement Puzzle) -->
-        <section id="headquarters" class="hidden bg-gray-900 p-6 rounded-lg shadow-lg">
-            <h1 class="text-2xl font-bold mb-4">CtrlAltGG - Hand of G Headquarters</h1>
-            <p class="mb-4">You’ve breached the Firewall. Complete the Flower of Life by placing the circles in their sacred positions.</p>
-            <p class="mb-2">Buy the ticket, take the ride.</p>
-            <svg id="puzzle-canvas" class="puzzle-canvas mb-4" viewBox="0 0 300 300">
-                <!-- Central circle -->
-                <circle cx="150" cy="150" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                <!-- Placed circles (initially hidden, updated by JS) -->
-                <g id="placed-circles"></g>
-            </svg>
-            <div id="circle-pieces" class="mb-4">
-                <div class="circle-piece" draggable="true" data-id="1">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="circle-piece" draggable="true" data-id="2">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="circle-piece" draggable="true" data-id="3">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="circle-piece" draggable="true" data-id="4">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="circle-piece" draggable="true" data-id="5">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="circle-piece" draggable="true" data-id="6">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ff00" stroke-width="2"/>
-                    </svg>
-                </div>
-            </div>
-            <button onclick="checkPuzzle()" class="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600">Submit Pattern</button>
-            <p id="hq-feedback" class="mt-2"></p>
-            <p id="hq-success" class="hidden mt-4">[DECRYPTED] <a href="https://x.com/ixa313" class="text-green-500 underline">https://x.com/ixa313</a></p>
-            <a href="#" onclick="showSection('firewall')" class="mt-4 text-green-500 underline">Back to Firewall</a>
-        </section>
-    </div>
+    <section id="headquarters">
+        <h1>CtrlAltGG - Hand of G Headquarters</h1>
+        <p>You’ve breached the Firewall. Complete the Flower of Life by placing the circles in their sacred positions.</p>
+        <p>Buy the ticket, take the ride.</p>
+        <div class="flower-container">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <!-- Add more circles or adjust based on the "Flower of Life" pattern -->
+        </div>
+        <form>
+            <button type="submit">Submit Pattern</button>
+        </form>
+        <p>[DECRYPTED] <a href="https://x.com/ixa313">https://x.com/ixa313</a></p>
+        <a href="#firewall">Back to Firewall</a>
+    </section>
 
+    <!-- Add JavaScript if needed for form submissions or interactivity -->
     <script>
-        // Initialize game state
-        let progress = JSON.parse(localStorage.getItem('handOfGProgress')) || {
-            lairUnlocked: true,
-            firewallUnlocked: false,
-            hqUnlocked: false
-        };
-
-        // Show section based on progress
-        function showSection(sectionId) {
-            document.querySelectorAll('section').forEach(section => section.classList.add('hidden'));
-            document.getElementById(sectionId).classList.remove('hidden');
-        }
-
-        // Save progress
-        function saveProgress() {
-            localStorage.setItem('handOfGProgress', JSON.stringify(progress));
-        }
-
-        // Lair: Check matrix key
-        function checkLairKey() {
-            const input = document.getElementById('lair-input').value.trim();
-            const feedback = document.getElementById('lair-feedback');
-            if (input === '24720') {
-                feedback.textContent = 'Key accepted!';
-                feedback.classList.add('text-green-500');
-                document.getElementById('lair-next').classList.remove('hidden');
-                progress.firewallUnlocked = true;
-                saveProgress();
-            } else {
-                feedback.textContent = 'Incorrect key. Check the matrix.';
-                feedback.classList.add('text-red-500');
-            }
-        }
-
-        // Firewall: Check elite code
-        function checkFirewallCode() {
-            const input = document.getElementById('firewall-input').value.trim();
-            const feedback = document.getElementById('firewall-feedback');
-            if (input === '1337') {
-                feedback.textContent = 'Access granted!';
-                feedback.classList.add('text-green-500');
-                document.getElementById('firewall-next').classList.remove('hidden');
-                progress.hqUnlocked = true;
-                saveProgress();
-            } else {
-                feedback.textContent = 'Invalid code. Try again.';
-                feedback.classList.add('text-red-500');
-            }
-        }
-
-        // Headquarters: Flower of Life puzzle
-        const correctPositions = [
-            { id: '1', cx: 150.0, cy: 120.0 },
-            { id: '2', cx: 124.02, cy: 135.0 },
-            { id: '3', cx: 124.02, cy: 165.0 },
-            { id: '4', cx: 150.0, cy: 180.0 },
-            { id: '5', cx: 175.98, cy: 165.0 },
-            { id: '6', cx: 175.98, cy: 135.0 }
-        ];
-
-        let placedCircles = {};
-
-        // Drag-and-drop functionality
-        const pieces = document.querySelectorAll('.circle-piece');
-        const canvas = document.getElementById('puzzle-canvas');
-        let draggedPiece = null;
-
-        pieces.forEach(piece => {
-            piece.addEventListener('dragstart', (e) => {
-                draggedPiece = piece;
-                e.dataTransfer.setData('text/plain', '');
-            });
-
-            piece.addEventListener('dragend', () => {
-                draggedPiece = null;
+        // Example: Basic form handling (since no backend, just alert for demo)
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                alert('Submitted! (Demo - no backend)');
             });
         });
-
-        canvas.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-
-        canvas.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (!draggedPiece) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = 300 / rect.width;
-            const scaleY = 300 / rect.height;
-            const cx = (e.clientX - rect.left) * scaleX;
-            const cy = (e.clientY - rect.top) * scaleY;
-            const pieceId = draggedPiece.dataset.id;
-
-            // Find the closest correct position
-            let closestPos = null;
-            let minDist = Infinity;
-            correctPositions.forEach(pos => {
-                if (Object.values(placedCircles).some(p => p.id === pos.id)) return; // Skip already placed positions
-                const dist = Math.sqrt((cx - pos.cx) ** 2 + (cy - pos.cy) ** 2);
-                if (dist < minDist && dist < 30) { // Tolerance of 30px
-                    minDist = dist;
-                    closestPos = pos;
-                }
-            });
-
-            if (closestPos) {
-                // Snap to correct position
-                placedCircles[pieceId] = closestPos;
-                updateCanvas();
-                draggedPiece.classList.add('hidden');
-                draggedPiece.classList.add('correct');
-            }
-        });
-
-        function updateCanvas() {
-            const placedGroup = document.getElementById('placed-circles');
-            placedGroup.innerHTML = '';
-            Object.entries(placedCircles).forEach(([pieceId, pos]) => {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', pos.cx);
-                circle.setAttribute('cy', pos.cy);
-                circle.setAttribute('r', '30');
-                circle.setAttribute('fill', 'none');
-                circle.setAttribute('stroke', '#00ff00');
-                circle.setAttribute('stroke-width', '2');
-                circle.classList.add('correct');
-                placedGroup.appendChild(circle);
-            });
-        }
-
-        function checkPuzzle() {
-            const feedback = document.getElementById('hq-feedback');
-            const allPlaced = correctPositions.every(pos => {
-                const piece = Object.values(placedCircles).find(p => p.id === pos.id);
-                return piece && piece.cx === pos.cx && piece.cy === pos.cy;
-            });
-
-            if (allPlaced) {
-                feedback.textContent = 'Flower of Life restored!';
-                feedback.classList.add('text-green-500');
-                document.getElementById('hq-success').classList.remove('hidden');
-            } else {
-                feedback.textContent = 'Incomplete or incorrect pattern. Place all circles correctly.';
-                feedback.classList.add('text-red-500');
-            }
-        }
-
-        // Initialize game
-        if (progress.hqUnlocked) {
-            showSection('headquarters');
-        } else if (progress.firewallUnlocked) {
-            showSection('firewall');
-        } else {
-            showSection('lair');
-        }
     </script>
+
 </body>
 </html>
