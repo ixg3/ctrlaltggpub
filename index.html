@@ -76,15 +76,100 @@
             width: 200px;
             height: auto;
         }
+        #timer {
+            font-size: 24px;
+            color: #f00;
+            margin-bottom: 20px;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #intro {
+            margin-bottom: 20px;
+        }
+        #binary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 40px);
+            gap: 5px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+        .binary-cell {
+            width: 40px;
+            height: 40px;
+            background: #333;
+            color: #ff69b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .binary-cell.active {
+            background: #ff69b4;
+            color: #000;
+        }
+        #riddle-options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #sequence-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .seq-btn {
+            width: 50px;
+            height: 50px;
+            background: #333;
+            color: #ff69b4;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .seq-btn.highlight {
+            background: #ffb6c1;
+        }
+        #cyborg-code-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 5px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+        .code-cell {
+            width: 60px;
+            height: 60px;
+            background: #333;
+            color: #ff69b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .code-cell.active {
+            background: #ff69b4;
+            color: #000;
+        }
     </style>
 </head>
 <body>
     <canvas id="matrix-animation" class="matrix-animation"></canvas>
     <div class="container">
-        <div id="lair" class="section active">
+        <div id="timer"></div>
+        <div id="intro" class="section active">
             <h1>CtrlAltGG - Hand of G</h1>
-            <h2>Lair: Find the Secret Key</h2>
-            <p>You've been hacked by the Hand of G. Find the secret key in the matrix to proceed.</p>
+            <p>You scanned the hand of a cyborg... Now your device is being hacked! Complete all 7 puzzles before the timer runs out to save it. Fail, and the hack completes.</p>
+            <button type="button" onclick="startGame()">Start Challenge</button>
+        </div>
+        <div id="puzzle1" class="section">
+            <h2>Puzzle 1: Matrix Intrusion</h2>
+            <p>Find the secret key in the matrix to breach the first layer.</p>
             <pre id="matrix">0000000000000000000000000000000000000000
 000000000000X00000000000000000000000000
 0000000000000000000000000000000000000000
@@ -108,64 +193,151 @@
             <p>Enter the secret key (row numbers of X's, concatenated):</p>
             <input type="text" id="secret-key" placeholder="Secret key">
             <button type="button" onclick="checkKey()">Submit</button>
-            <p id="lair-message"></p>
+            <p id="p1-message"></p>
         </div>
-        <div id="firewall" class="section">
-            <h2>Firewall: Enter the Elite Code</h2>
-            <p>Think leet to bypass the firewall.</p>
+        <div id="puzzle2" class="section">
+            <h2>Puzzle 2: Leet Firewall</h2>
+            <p>Enter the elite code to bypass.</p>
             <input type="text" id="elite-code" placeholder="Enter code">
             <button type="button" onclick="checkCode()">Submit</button>
-            <p id="firewall-message"></p>
+            <p id="p2-message"></p>
         </div>
-        <div id="headquarters" class="section">
-            <h2>Hand of G Uploading... to retain access to your device or cancel upload: Complete the Flower of Life</h2>
-            <p>Buy the ticket, take the ride. Drag and drop uploading files to form the Seed of Life. Upon completion, the full Flower of Life will reveal itself. CyberSalvation</p>
+        <div id="puzzle3" class="section">
+            <h2>Puzzle 3: Flower of Life Core</h2>
+            <p>Form the Seed of Life to stabilize the core.</p>
             <canvas id="flower-canvas" width="400" height="400"></canvas>
-            <p id="headquarters-message"></p>
+            <p id="p3-message"></p>
+        </div>
+        <div id="puzzle4" class="section">
+            <h2>Puzzle 4: Binary Lock</h2>
+            <p>Flip the bits to match the pattern: 10101 (top row), 01010 (bottom row, etc.).</p>
+            <div id="binary-grid"></div>
+            <button type="button" onclick="checkBinary()">Submit</button>
+            <p id="p4-message"></p>
+        </div>
+        <div id="puzzle5" class="section">
+            <h2>Puzzle 5: Cyborg Riddle</h2>
+            <p>What has a heart that doesn't beat, eyes that don't see, but guards the digital realm?</p>
+            <div id="riddle-options">
+                <button type="button" onclick="checkRiddle('Firewall')">Firewall</button>
+                <button type="button" onclick="checkRiddle('Virus')">Virus</button>
+                <button type="button" onclick="checkRiddle('Cyborg')">Cyborg</button>
+            </div>
+            <p id="p5-message"></p>
+        </div>
+        <div id="puzzle6" class="section">
+            <h2>Puzzle 6: Sequence Hack</h2>
+            <p>Memorize and repeat the sequence.</p>
+            <div id="sequence-buttons">
+                <button class="seq-btn" onclick="playerClick(0)">1</button>
+                <button class="seq-btn" onclick="playerClick(1)">2</button>
+                <button class="seq-btn" onclick="playerClick(2)">3</button>
+                <button class="seq-btn" onclick="playerClick(3)">4</button>
+            </div>
+            <button type="button" onclick="startSequence()">Start Sequence</button>
+            <p id="p6-message"></p>
+        </div>
+        <div id="puzzle7" class="section">
+            <h2>Puzzle 7: Cyborg Code</h2>
+            <p>Enter the code hidden in previous puzzles (clue: rows from 1 + leet + circles).</p>
+            <input type="text" id="final-code" placeholder="Final code">
+            <button type="button" onclick="checkFinalCode()">Submit</button>
+            <p id="p7-message"></p>
         </div>
         <div id="success" class="section">
             <h2>Success! Trolledbythehandofg</h2>
             <img class="troll-face" src="https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png" alt="Troll Face">
             <p><a href="https://x.com/ixa313">Visit my X account</a></p>
         </div>
+        <div id="failure" class="section">
+            <h2>You've Been Hacked!</h2>
+            <p>Don't be evil, G is watching.</p>
+        </div>
     </div>
     <script>
-        // Lair Puzzle
+        let timerInterval;
+        let timeLeft = 780; // 13 minutes in seconds
+        let wrongAttempts = 0;
+        const maxWrong = 9;
+        const puzzles = ['puzzle1', 'puzzle2', 'puzzle3', 'puzzle4', 'puzzle5', 'puzzle6', 'puzzle7'];
+        let currentPuzzle = 0;
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                showSection('failure');
+            } else {
+                timeLeft--;
+            }
+        }
+
+        function startGame() {
+            showSection('puzzle1');
+            timerInterval = setInterval(updateTimer, 1000);
+            document.getElementById('intro').classList.remove('active');
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section.active').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function nextPuzzle() {
+            currentPuzzle++;
+            if (currentPuzzle < puzzles.length) {
+                showSection(puzzles[currentPuzzle]);
+                if (puzzles[currentPuzzle] === 'puzzle3') initFlowerCanvas();
+                if (puzzles[currentPuzzle] === 'puzzle4') initBinaryGrid();
+                if (puzzles[currentPuzzle] === 'puzzle6') initSequence();
+            } else {
+                clearInterval(timerInterval);
+                showSection('success');
+            }
+        }
+
+        function checkWrongAttempts() {
+            if (wrongAttempts >= maxWrong) {
+                clearInterval(timerInterval);
+                showSection('failure');
+            }
+        }
+
+        // Puzzle 1
         function checkKey() {
             const key = document.getElementById('secret-key').value.trim();
-            const message = document.getElementById('lair-message');
+            const message = document.getElementById('p1-message');
             if (key === '24720') {
-                message.textContent = 'Access Granted! Proceed to Firewall';
+                message.textContent = 'Access Granted!';
                 message.className = 'success';
-                setTimeout(() => {
-                    document.getElementById('lair').classList.remove('active');
-                    document.getElementById('firewall').classList.add('active');
-                }, 1000);
+                setTimeout(nextPuzzle, 1000);
             } else {
-                message.textContent = 'Invalid key. Try again.';
+                wrongAttempts++;
+                message.textContent = 'Invalid key.';
                 message.className = 'error';
+                checkWrongAttempts();
             }
         }
 
-        // Firewall Puzzle
+        // Puzzle 2
         function checkCode() {
             const code = document.getElementById('elite-code').value.trim();
-            const message = document.getElementById('firewall-message');
+            const message = document.getElementById('p2-message');
             if (code === '1337') {
-                message.textContent = 'Firewall bypassed!';
+                message.textContent = 'Bypassed!';
                 message.className = 'success';
-                setTimeout(() => {
-                    document.getElementById('firewall').classList.remove('active');
-                    document.getElementById('headquarters').classList.add('active');
-                    initFlowerCanvas();
-                }, 1000);
+                setTimeout(nextPuzzle, 1000);
             } else {
-                message.textContent = 'Invalid code. Try again.';
+                wrongAttempts++;
+                message.textContent = 'Invalid.';
                 message.className = 'error';
+                checkWrongAttempts();
             }
         }
 
-        // Flower of Life Puzzle - New Version
+        // Puzzle 3 Flower
         const centerX = 200;
         const centerY = 200;
         const radius = 40;
@@ -193,7 +365,6 @@
             const canvas = document.getElementById('flower-canvas');
             const ctx = canvas.getContext('2d');
 
-            // Mouse events
             canvas.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 startDrag(e, canvas, ctx);
@@ -207,7 +378,6 @@
                 endDrag(e, canvas, ctx);
             });
 
-            // Touch events
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 startDrag(e, canvas, ctx);
@@ -290,12 +460,14 @@
                         }
                     }
                 });
+                if (!placed) {
+                    wrongAttempts++;
+                    checkWrongAttempts();
+                }
                 selectedCircle = null;
                 drawFlower(ctx);
                 if (circles.every(circle => circle.placed)) {
-                    document.getElementById('headquarters').classList.remove('active');
-                    document.getElementById('success').classList.add('active');
-                    drawFlower(ctx);  // Redraw to show full flower (optional, since section hides)
+                    setTimeout(nextPuzzle, 1000);
                 }
             }
         }
@@ -305,14 +477,12 @@
             ctx.strokeStyle = '#ff69b4';
             ctx.lineWidth = 2;
 
-            // Draw central circle
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.fillStyle = '#ff69b4';  // Filled as complete
+            ctx.fillStyle = '#ff69b4';
             ctx.fill();
 
-            // Draw draggable circles
             circles.forEach(circle => {
                 ctx.beginPath();
                 ctx.arc(circle.x, circle.y, radius, 0, Math.PI * 2);
@@ -321,9 +491,7 @@
                 ctx.fill();
             });
 
-            // If complete, draw the second ring (12 circles)
             if (circles.every(circle => circle.placed)) {
-                // Radial outer (at 2 * dist, same angles)
                 for (let i = 0; i < 6; i++) {
                     const angle = i * 60 * Math.PI / 180;
                     const ox = centerX + 2 * dist * Math.cos(angle);
@@ -334,7 +502,6 @@
                     ctx.fillStyle = '#ff69b4';
                     ctx.fill();
                 }
-                // Mid outer (at dist * sqrt(3), mid angles)
                 const dist2 = dist * Math.sqrt(3);
                 for (let i = 0; i < 6; i++) {
                     const angle = (30 + i * 60) * Math.PI / 180;
@@ -349,7 +516,146 @@
             }
         }
 
-        // Matrix Animation Background
+        // Puzzle 4 Binary
+        const binaryPattern = [
+            [1, 0, 1, 0, 1],
+            [0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1],
+            [0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1]
+        ];
+
+        function initBinaryGrid() {
+            const grid = document.getElementById('binary-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 5; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'binary-cell';
+                    cell.textContent = '0';
+                    cell.dataset.value = 0;
+                    cell.onclick = () => {
+                        cell.dataset.value = 1 - cell.dataset.value;
+                        cell.textContent = cell.dataset.value;
+                        cell.classList.toggle('active');
+                    };
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function checkBinary() {
+            const cells = document.querySelectorAll('.binary-cell');
+            let correct = true;
+            cells.forEach((cell, idx) => {
+                const row = Math.floor(idx / 5);
+                const col = idx % 5;
+                if (parseInt(cell.dataset.value) !== binaryPattern[row][col]) {
+                    correct = false;
+                }
+            });
+            const message = document.getElementById('p4-message');
+            if (correct) {
+                message.textContent = 'Lock Opened!';
+                message.className = 'success';
+                setTimeout(nextPuzzle, 1000);
+            } else {
+                wrongAttempts++;
+                message.textContent = 'Pattern Incorrect.';
+                message.className = 'error';
+                checkWrongAttempts();
+            }
+        }
+
+        // Puzzle 5 Riddle
+        function checkRiddle(answer) {
+            const message = document.getElementById('p5-message');
+            if (answer === 'Firewall') {
+                message.textContent = 'Correct!';
+                message.className = 'success';
+                setTimeout(nextPuzzle, 1000);
+            } else {
+                wrongAttempts++;
+                message.textContent = 'Wrong.';
+                message.className = 'error';
+                checkWrongAttempts();
+            }
+        }
+
+        // Puzzle 6 Sequence
+        let sequence = [];
+        let playerSequence = [];
+        let seqLevel = 1;
+
+        function initSequence() {
+            sequence = [];
+            playerSequence = [];
+            generateSequence();
+        }
+
+        function generateSequence() {
+            for (let i = 0; i < seqLevel; i++) {
+                sequence.push(Math.floor(Math.random() * 4));
+            }
+            playSequence();
+        }
+
+        function playSequence() {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < sequence.length) {
+                    highlightButton(sequence[i]);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+
+        function highlightButton(index) {
+            const btn = document.querySelectorAll('.seq-btn')[index];
+            btn.classList.add('highlight');
+            setTimeout(() => btn.classList.remove('highlight'), 300);
+        }
+
+        function playerClick(index) {
+            playerSequence.push(index);
+            if (playerSequence.length === sequence.length) {
+                if (playerSequence.every((val, idx) => val === sequence[idx])) {
+                    document.getElementById('p6-message').textContent = 'Sequence Correct!';
+                    document.getElementById('p6-message').className = 'success';
+                    setTimeout(nextPuzzle, 1000);
+                } else {
+                    wrongAttempts++;
+                    document.getElementById('p6-message').textContent = 'Incorrect. Try again.';
+                    document.getElementById('p6-message').className = 'error';
+                    playerSequence = [];
+                    checkWrongAttempts();
+                }
+            }
+        }
+
+        function startSequence() {
+            initSequence();
+        }
+
+        // Puzzle 7 Final Code
+        function checkFinalCode() {
+            const code = document.getElementById('final-code').value.trim();
+            const message = document.getElementById('p7-message');
+            if (code === '2472013376') { // Example: rows + leet + circles count
+                message.textContent = 'Hack Defeated!';
+                message.className = 'success';
+                setTimeout(nextPuzzle, 1000);
+            } else {
+                wrongAttempts++;
+                message.textContent = 'Invalid Code.';
+                message.className = 'error';
+                checkWrongAttempts();
+            }
+        }
+
+        // Matrix Animation
         const animCanvas = document.getElementById('matrix-animation');
         animCanvas.width = window.innerWidth;
         animCanvas.height = window.innerHeight;
@@ -378,6 +684,9 @@
             animCanvas.width = window.innerWidth;
             animCanvas.height = window.innerHeight;
         });
+
+        // Initialize timer display
+        updateTimer();
     </script>
 </body>
 </html>
