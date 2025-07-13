@@ -192,18 +192,65 @@
         function initFlowerCanvas() {
             const canvas = document.getElementById('flower-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.addEventListener('mousedown', (e) => startDrag(e, canvas, ctx));
-            canvas.addEventListener('mousemove', (e) => drag(e, canvas, ctx));
-            canvas.addEventListener('mouseup', (e) => endDrag(e, canvas, ctx));
+
+            // Mouse events
+            canvas.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                startDrag(e, canvas, ctx);
+            });
+            canvas.addEventListener('mousemove', (e) => {
+                e.preventDefault();
+                drag(e, canvas, ctx);
+            });
+            canvas.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                endDrag(e, canvas, ctx);
+            });
+
+            // Touch events
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startDrag(e, canvas, ctx);
+            }, { passive: false });
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                drag(e, canvas, ctx);
+            }, { passive: false });
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                endDrag(e, canvas, ctx);
+            }, { passive: false });
+
             drawFlower(ctx);
+        }
+
+        function getEventPosition(e, rect) {
+            let clientX, clientY;
+            if (e.type.startsWith('touch')) {
+                if (e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else if (e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                }
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
         }
 
         function startDrag(e, canvas, ctx) {
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const pos = getEventPosition(e, rect);
+            const mouseX = pos.x;
+            const mouseY = pos.y;
             circles.forEach(circle => {
-                if (!circle.placed) {  // Only drag unplaced circles
+                if (!circle.placed) {
                     const dx = mouseX - circle.x;
                     const dy = mouseY - circle.y;
                     if (Math.sqrt(dx * dx + dy * dy) < circle.radius) {
@@ -216,8 +263,9 @@
         function drag(e, canvas, ctx) {
             if (selectedCircle) {
                 const rect = canvas.getBoundingClientRect();
-                selectedCircle.x = e.clientX - rect.left;
-                selectedCircle.y = e.clientY - rect.top;
+                const pos = getEventPosition(e, rect);
+                selectedCircle.x = pos.x;
+                selectedCircle.y = pos.y;
                 drawFlower(ctx);
             }
         }
@@ -225,14 +273,14 @@
         function endDrag(e, canvas, ctx) {
             if (selectedCircle) {
                 const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
+                const pos = getEventPosition(e, rect);
+                const mouseX = pos.x;
+                const mouseY = pos.y;
                 let placed = false;
                 targets.forEach(target => {
                     const dx = mouseX - target.x;
                     const dy = mouseY - target.y;
                     if (Math.sqrt(dx * dx + dy * dy) < 30) {
-                        // Check if occupied
                         const occupied = circles.some(c => c !== selectedCircle && c.placed && c.x === target.x && c.y === target.y);
                         if (!occupied) {
                             selectedCircle.x = target.x;
