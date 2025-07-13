@@ -72,6 +72,10 @@
             pointer-events: none;
             z-index: -1;
         }
+        .troll-face {
+            width: 200px;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -103,14 +107,14 @@
 000000000000000000000X00000000000000000</pre>
             <p>Enter the secret key (row numbers of X's, concatenated):</p>
             <input type="text" id="secret-key" placeholder="Secret key">
-            <button onclick="checkKey()">Submit</button>
+            <button type="button" onclick="checkKey()">Submit</button>
             <p id="lair-message"></p>
         </div>
         <div id="firewall" class="section">
             <h2>Firewall: Enter the Elite Code</h2>
             <p>Think leet to bypass the firewall.</p>
             <input type="text" id="elite-code" placeholder="Enter code">
-            <button onclick="checkCode()">Submit</button>
+            <button type="button" onclick="checkCode()">Submit</button>
             <p id="firewall-message"></p>
         </div>
         <div id="headquarters" class="section">
@@ -121,7 +125,7 @@
         </div>
         <div id="success" class="section">
             <h2>Success! Trolledbythehandofg</h2>
-            <img src="https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png" alt="Troll Face" style="width:200px; height:auto;">
+            <img class="troll-face" src="https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png" alt="Troll Face">
             <p><a href="https://x.com/ixa313">Visit my X account</a></p>
         </div>
     </div>
